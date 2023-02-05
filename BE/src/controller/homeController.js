@@ -1,6 +1,7 @@
 const { json } = require("express");
 const Pool = require("../config/configDB")
 
+
 let getHomepage = async (req, res) => {
     const [rows, fields] = await Pool.execute('SELECT * FROM `tbl_users`');
     return res.send(rows)
@@ -35,10 +36,43 @@ let getUploadFile = async (req, res) => {
         message: "image nè"
     })
 }
-let uploadFile = async (req, res) => {
-    return res.status(200).json({
-        message: "image upload nè"
-    })
+
+let uploadSingleFile = async (req, res) => {
+    console.log(req.file);
+    if (req.fileValidationError) {
+        return res.send(req.fileValidationError);
+    }
+    else if (!req.file) {
+        return res.send('Please select an image to upload');
+    }
+
+    res.send(`You have uploaded this image: <hr/><img src="/image/${req.file.filename}" width="500"><hr /><a href="/upload">Upload another image</a>`);
+    // });
+}
+
+let uploadMultipleFile = async (req, res) => {
+
+    console.log(req.files);
+    if (req.fileValidationError) {
+        return res.send(req.fileValidationError);
+    }
+    else if (!req.files) {
+        return res.send('Please select an image to upload');
+    }
+
+    let result = "You have uploaded these images: <hr />";
+    const files = req.files;
+    let index, len;
+
+    // Loop through all the uploaded images and display them on frontend
+    for (index = 0, len = files.length; index < len; ++index) {
+        result += `<img src="/image/${files[index].filename}" width="300" style="margin-right: 20px;">`;
+    }
+    result += '<hr/><a href="/upload">Upload more images</a>';
+    res.send(result);
+
+
+    // res.send("heelo")
 }
 module.exports = {
     getHomepage,
@@ -47,5 +81,6 @@ module.exports = {
     deleteUser,
     updateUser,
     getUploadFile,
-    uploadFile
+    uploadSingleFile,
+    uploadMultipleFile
 }
